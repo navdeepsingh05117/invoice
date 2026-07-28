@@ -57,7 +57,6 @@ function renderItems() {
       <span class="line-amount">${money(itemAmounts(item).total)}</span>
       <button class="remove-item" data-remove="${index}" type="button" aria-label="Remove item ${index + 1}">×</button>
     </div>
-    <input class="item-detail-hidden" data-index="${index}" value="${escapeHtml(item.detail || "")}" hidden>
   `).join("");
   $("itemCount").textContent = `${state.items.length} item${state.items.length === 1 ? "" : "s"}`;
   renderPreview();
