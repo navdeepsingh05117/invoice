@@ -15,7 +15,7 @@ body {
   margin: 0;
   color: var(--ink);
   background: #fff;
-  font-family: "Instrument Sans", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
 }
@@ -62,8 +62,9 @@ h1, h2, h3, p { margin-top: 0; }
 }
 .profile-avatar {
   width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center;
-  border-radius: 50%; color: white; background: #111; font-size: 11px; font-weight: 700;
+  position: relative; overflow: hidden; border-radius: 50%; color: white; background: #111; font-size: 11px; font-weight: 700;
 }
+.profile-avatar img { width: 100%; height: 100%; display: none; object-fit: cover; background: white; }
 .side-profile strong, .side-profile small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .side-profile strong { margin-bottom: 3px; font-size: 12px; }
 .side-profile small { max-width: 135px; color: var(--muted); font-size: 9px; }
@@ -78,8 +79,8 @@ h1, h2, h3, p { margin-top: 0; }
   color: #87898c;
   border: 0;
   background: transparent;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 500;
+  font-size: 16px;
   text-align: left;
   transition: color .22s ease, background .22s ease, transform .22s ease;
 }
@@ -172,7 +173,7 @@ body.products-mode #productsPage { display: block; animation: pageIn .42s cubic-
 }
 .setup-card:hover { transform: translateY(-2px); box-shadow: 0 16px 35px rgba(0,0,0,.045); }
 .setup-card-title { margin-bottom: 28px; display: flex; align-items: center; gap: 14px; }
-.setup-card-title h2 { margin: 0 0 4px; font: 700 18px "Space Grotesk"; letter-spacing: -.04em; }
+.setup-card-title h2 { margin: 0 0 4px; font: 600 18px "Inter"; letter-spacing: -.02em; }
 .setup-card-title p { margin: 0; color: var(--muted); font-size: 9px; }
 .setup-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 13px; font-size: 17px; }
 .setup-icon.lavender { background: var(--lavender); }
@@ -361,6 +362,14 @@ body.products-mode #productsPage { display: block; animation: pageIn .42s cubic-
   font-size: 10px;
   font-weight: 700;
 }
+.card-heading h2,
+.quick-card h2,
+.preview-toolbar h2 {
+  font-family: "Inter", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+}
 .editor-heading { margin-bottom: 35px; }
 .eyebrow {
   margin: 0 0 8px;
@@ -421,15 +430,15 @@ h1 {
   display: flex;
   align-items: center;
   gap: 10px;
-  font: 700 15px "Space Grotesk", sans-serif;
+  font: 600 18px "Inter", sans-serif;
   letter-spacing: -.02em;
 }
 .section-label > span {
   width: 26px; height: 26px; display: grid; place-items: center;
-  border-radius: 50%; color: #111; background: white; font: 700 8px "Instrument Sans";
+  border-radius: 50%; color: #111; background: white; font: 600 10px "Inter";
   box-shadow: 0 0 0 1px #dedede;
 }
-.section-label small { margin-left: auto; color: var(--muted); font: 500 9px "Instrument Sans"; }
+.section-label small { margin-left: auto; color: var(--muted); font: 500 12px "Inter"; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .field { margin-bottom: 16px; }
 .field:last-child { margin-bottom: 0; }
@@ -438,8 +447,8 @@ h1 {
   margin-bottom: 7px;
   display: block;
   color: #55575b;
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
 }
 input, textarea, select {
   width: 100%;
@@ -448,6 +457,8 @@ input, textarea, select {
   outline: none;
   color: var(--ink);
   background: white;
+  font-size: 16px;
+  font-weight: 400;
   transition: border .2s ease, box-shadow .2s ease, background .2s ease, transform .2s ease;
 }
 input, select { height: 44px; padding: 0 12px; }
@@ -582,6 +593,16 @@ body.preview-mode .preview-panel { display: block; animation: pageIn .4s cubic-b
 .grand-total { margin-top: 8px; padding: 12px; border: 0 !important; border-radius: 6px; color: #111; background: var(--lavender); }
 .totals .grand-total { grid-template-columns: 1fr auto; }
 .grand-total strong { font-size: 14px; }
+.totals strong,
+.line-amount,
+.invoice-table td:not(:first-child),
+.summary-card strong,
+.overview-stat strong,
+.invoice-list-row > strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
 .invoice-footer { margin-top: 66px; padding-top: 18px; display: flex; justify-content: space-between; gap: 30px; border-top: 1px solid #ddd; }
 .invoice-footer p { max-width: 380px; margin: 0; }
 .thank-you { font: 700 18px "Space Grotesk"; letter-spacing: -.04em; }

@@ -7,14 +7,14 @@
   <title>Slate Invoice — Invoice Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <aside class="sidebar">
     <a class="side-brand" href="#" aria-label="Slate Invoice home"><span class="side-brand-mark"><i data-lucide="file-check-2"></i></span>Slate<span>.</span></a>
     <div class="side-profile">
-      <span class="profile-avatar" id="profileAvatar">YB</span>
+      <span class="profile-avatar" id="profileAvatar"><span id="profileInitials">YB</span><img id="profileLogo" alt="Company logo"></span>
       <div><strong id="profileBusinessName">Your business</strong><small id="profileBusinessEmail">Business email</small></div>
     </div>
     <nav class="side-nav" aria-label="Main navigation">
@@ -104,12 +104,15 @@
       <div class="setup-card">
         <div class="setup-card-title"><span class="setup-icon lavender"><i data-lucide="building-2"></i></span><div><h2>Business information</h2><p>This information appears in the “From” section of your invoice.</p></div></div>
         <div class="logo-row">
-          <button class="logo-upload" id="companyLogoBtn" type="button"><span><strong>＋</strong> Add logo</span></button>
+          <button class="logo-upload" id="companyLogoBtn" type="button">
+            <span id="companyLogoPlaceholder"><strong>＋</strong> Add logo</span>
+            <img id="companyLogoPreview" alt="Company logo">
+          </button>
           <div class="field grow"><label for="companyName">Company name</label><input id="companyName" type="text" placeholder="Company name"></div>
         </div>
         <div class="grid-2">
           <div class="field"><label for="companyEmail">Company email</label><input id="companyEmail" type="email" placeholder="Company email"></div>
-          <div class="field"><label for="companyPhone">Phone number</label><input id="companyPhone" type="tel" placeholder="Phone number"></div>
+          <div class="field"><label for="companyPhone">Phone number</label><input id="companyPhone" type="tel" inputmode="tel" pattern="[0-9+() -]*" placeholder="Phone number"></div>
         </div>
         <div class="field"><label for="companyAddress">Company address</label><textarea id="companyAddress" rows="3" placeholder="Company address"></textarea></div>
         <button class="save-setup-btn" id="saveCompanyBtn" type="button">Save company details</button>
@@ -174,7 +177,7 @@
           </div>
           <div class="field">
             <label for="businessPhone">Phone</label>
-            <input id="businessPhone" type="tel" placeholder="Phone number">
+            <input id="businessPhone" type="tel" inputmode="tel" pattern="[0-9+() -]*" placeholder="Phone number">
           </div>
         </div>
         <div class="field">

@@ -124,6 +124,12 @@ function updateLogo() {
   $("logoPreview").src = state.logo;
   $("logoPreview").style.display = state.logo ? "block" : "none";
   $("logoPlaceholder").style.display = state.logo ? "none" : "block";
+  $("companyLogoPreview").src = state.logo;
+  $("companyLogoPreview").style.display = state.logo ? "block" : "none";
+  $("companyLogoPlaceholder").style.display = state.logo ? "none" : "block";
+  $("profileLogo").src = state.logo;
+  $("profileLogo").style.display = state.logo ? "block" : "none";
+  $("profileInitials").style.display = state.logo ? "none" : "inline";
 }
 
 let saveTimer;
@@ -185,11 +191,24 @@ function updateCompanyProfile() {
     : name.split(/\s+/).slice(0, 2).map(word => word[0]).join("").toUpperCase();
   $("profileBusinessName").textContent = name;
   $("profileBusinessEmail").textContent = email;
-  $("profileAvatar").textContent = initials;
+  $("profileInitials").textContent = initials;
   $("overviewTitle").textContent = name === "Your business"
     ? "Hello there"
     : `Hello, ${name.split(/\s+/)[0]}`;
 }
+
+function validatePhoneInput(event) {
+  const original = event.target.value;
+  const sanitized = original.replace(/[^0-9+() -]/g, "");
+  if (original !== sanitized) {
+    event.target.value = sanitized;
+    showToast("Phone numbers cannot contain letters.", "warning");
+  }
+}
+
+["companyPhone", "businessPhone"].forEach(id => {
+  $(id).addEventListener("input", validatePhoneInput);
+});
 
 fieldIds.forEach(id => $(id).addEventListener("input", renderPreview));
 
@@ -509,6 +528,8 @@ document.addEventListener("keydown", event => {
 
 loadState();
 setInitialDates();
+$("companyPhone").value = $("companyPhone").value.replace(/[^0-9+() -]/g, "");
+$("businessPhone").value = $("businessPhone").value.replace(/[^0-9+() -]/g, "");
 updateCompanyProfile();
 renderItems();
 renderCatalogue();
