@@ -9,6 +9,7 @@ let state = {
   items: [
     { name: "", detail: "", qty: 1, rate: 0 }
   ],
+  products: [],
   logo: ""
 };
 
@@ -119,7 +120,15 @@ function updateLogo() {
 let saveTimer;
 function saveState() {
   const form = Object.fromEntries(fieldIds.map(id => [id, $(id).value]));
-  localStorage.setItem("slateInvoiceV2", JSON.stringify({ form, items: state.items, logo: state.logo }));
+  const company = {
+    name: $("companyName").value,
+    email: $("companyEmail").value,
+    phone: $("companyPhone").value,
+    address: $("companyAddress").value
+  };
+  localStorage.setItem("slateInvoiceV2", JSON.stringify({
+    form, items: state.items, products: state.products, company, logo: state.logo
+  }));
   $("saveStatus").innerHTML = '<span class="status-dot"></span>Saving…';
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => $("saveStatus").innerHTML = '<span class="status-dot"></span>Saved locally', 350);
@@ -131,6 +140,13 @@ function loadState() {
     if (!saved) return;
     Object.entries(saved.form || {}).forEach(([id, fieldValue]) => { if ($(id)) $(id).value = fieldValue; });
     if (Array.isArray(saved.items) && saved.items.length) state.items = saved.items;
+    if (Array.isArray(saved.products)) state.products = saved.products;
+    if (saved.company) {
+      $("companyName").value = saved.company.name || "";
+      $("companyEmail").value = saved.company.email || "";
+      $("companyPhone").value = saved.company.phone || "";
+      $("companyAddress").value = saved.company.address || "";
+    }
     state.logo = saved.logo || "";
   } catch (_) {
     localStorage.removeItem("slateInvoiceV2");
@@ -220,7 +236,7 @@ $("backToEditBtn").addEventListener("click", () => {
 });
 
 function showInvoiceEditor() {
-  document.body.classList.remove("preview-mode");
+  document.body.classList.remove("preview-mode", "company-mode", "products-mode");
   document.body.classList.add("invoice-mode");
   document.querySelectorAll("[data-view]").forEach(button => {
     button.classList.toggle("active", button.dataset.view === "invoice");
@@ -229,9 +245,18 @@ function showInvoiceEditor() {
 }
 
 function showOverview() {
-  document.body.classList.remove("preview-mode", "invoice-mode");
+  document.body.classList.remove("preview-mode", "invoice-mode", "company-mode", "products-mode");
   document.querySelectorAll("[data-view]").forEach(button => {
     button.classList.toggle("active", button.dataset.view === "overview");
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function showSetupPage(view) {
+  document.body.classList.remove("preview-mode", "invoice-mode", "company-mode", "products-mode");
+  document.body.classList.add(`${view}-mode`);
+  document.querySelectorAll("[data-view]").forEach(button => {
+    button.classList.toggle("active", button.dataset.view === view);
   });
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -240,6 +265,8 @@ document.querySelectorAll("[data-view]").forEach(button => {
   button.addEventListener("click", () => {
     if (button.dataset.view === "overview") showOverview();
     if (button.dataset.view === "invoice") showInvoiceEditor();
+    if (button.dataset.view === "company") showSetupPage("company");
+    if (button.dataset.view === "products") showSetupPage("products");
     if (button.dataset.view === "transactions") showToast("Transaction tracking is coming soon.");
   });
 });
@@ -247,6 +274,75 @@ document.querySelectorAll("[data-view]").forEach(button => {
 ["overviewCreateBtn", "quickCreateBtn"].forEach(id => $(id).addEventListener("click", showInvoiceEditor));
 $("viewInvoiceBtn").addEventListener("click", showInvoiceEditor);
 $("recentInvoiceRow").addEventListener("click", showInvoiceEditor);
+
+$("companyLogoBtn").addEventListener("click", () => $("logoInput").click());
+$("saveCompanyBtn").addEventListener("click", () => {
+  const companyName = $("companyName").value.trim();
+  if (!companyName) {
+    showToast("Please enter your company name.");
+    $("companyName").focus();
+    return;
+  }
+  $("businessName").value = companyName;
+  $("businessEmail").value = $("companyEmail").value.trim();
+  $("businessPhone").value = $("companyPhone").value.trim();
+  $("businessAddress").value = $("companyAddress").value.trim();
+  renderPreview();
+  showToast("Company details saved and added to invoices.");
+});
+
+function renderCatalogue() {
+  $("catalogueCount").textContent = state.products.length
+    ? `${state.products.length} saved product${state.products.length === 1 ? "" : "s"}`
+    : "No products saved";
+  $("catalogueList").innerHTML = state.products.length
+    ? state.products.map((product, index) => `
+      <div class="catalogue-item">
+        <div><strong>${escapeHtml(product.name)}</strong><small>Per ${escapeHtml(product.unit.toLowerCase())}</small></div>
+        <span>${money(product.price)}</span>
+        <button type="button" data-delete-product="${index}" aria-label="Delete ${escapeHtml(product.name)}">×</button>
+      </div>`).join("")
+    : '<p class="empty-catalogue">Your saved products will appear here.</p>';
+  $("productPicker").innerHTML = '<option value="">Select a product to add it to the invoice</option>' +
+    state.products.map((product, index) =>
+      `<option value="${index}">${escapeHtml(product.name)} — ${money(product.price)}</option>`
+    ).join("");
+  saveState();
+}
+
+$("addProductBtn").addEventListener("click", () => {
+  const name = $("catalogProductName").value.trim();
+  const price = Math.max(0, Number($("catalogProductPrice").value) || 0);
+  if (!name) {
+    showToast("Please enter a product name.");
+    $("catalogProductName").focus();
+    return;
+  }
+  state.products.push({ name, price, unit: $("catalogProductUnit").value });
+  $("catalogProductName").value = "";
+  $("catalogProductPrice").value = "";
+  renderCatalogue();
+  showToast("Product added to your catalogue.");
+});
+
+$("catalogueList").addEventListener("click", event => {
+  const index = event.target.dataset.deleteProduct;
+  if (index === undefined) return;
+  state.products.splice(Number(index), 1);
+  renderCatalogue();
+});
+
+$("productPicker").addEventListener("change", () => {
+  const index = $("productPicker").value;
+  if (index === "") return;
+  const product = state.products[Number(index)];
+  const item = { name: product.name, detail: `Per ${product.unit.toLowerCase()}`, qty: 1, rate: product.price };
+  if (state.items.length === 1 && !state.items[0].name && state.items[0].rate === 0) state.items[0] = item;
+  else state.items.push(item);
+  renderItems();
+  $("productPicker").value = "";
+  showToast(`${product.name} added to the invoice.`);
+});
 
 $("newInvoiceBtn").addEventListener("click", () => {
   if (!confirm("Start a new invoice? Your current invoice will be cleared.")) return;
@@ -257,3 +353,4 @@ $("newInvoiceBtn").addEventListener("click", () => {
 loadState();
 setInitialDates();
 renderItems();
+renderCatalogue();
