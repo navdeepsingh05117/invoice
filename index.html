@@ -7,30 +7,154 @@
   <title>Slate Invoice — Invoice Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <aside class="sidebar">
+    <a class="side-brand" href="#" aria-label="Slate Invoice home">Slate<span>.</span></a>
+    <div class="side-profile">
+      <span class="profile-avatar">YB</span>
+      <div><strong>Your business</strong><small>Business email</small></div>
+    </div>
+    <nav class="side-nav" aria-label="Main navigation">
+      <button class="active" type="button" data-view="overview"><span>⌂</span>Overview</button>
+      <button type="button" data-view="invoice"><span>▤</span>Invoices</button>
+      <button type="button" data-view="company"><span>▦</span>Company details</button>
+      <button type="button" data-view="products"><span>◇</span>Products</button>
+      <button type="button" data-view="transactions"><span>⇄</span>Transactions</button>
+    </nav>
+    <div class="side-bottom">
+      <a href="#"><span>?</span>Support</a>
+      <p>Invoices made simple.<br>Data stays on your device.</p>
+    </div>
+  </aside>
+  <div class="app-main">
   <header class="topbar">
     <a class="brand" href="#" aria-label="Slate Invoice home">
       <span class="brand-mark">S</span>
-      <span>Slate Invoice</span>
+      <span>Invoice creator</span>
     </a>
     <div class="top-actions">
       <span class="save-status" id="saveStatus"><span class="status-dot"></span>Saved locally</span>
       <button class="btn btn-ghost" id="newInvoiceBtn" type="button"><span aria-hidden="true">＋</span> New</button>
-      <button class="btn btn-primary" id="downloadBtn" type="button"><span aria-hidden="true">↓</span> Download PDF</button>
+      <button class="btn btn-primary preview-only" id="downloadBtn" type="button"><span aria-hidden="true">↓</span> Download PDF</button>
     </div>
   </header>
 
   <main class="workspace">
+    <section class="overview-page" id="overviewPage" aria-labelledby="overviewTitle">
+      <div class="overview-heading">
+        <div>
+          <p class="eyebrow">Business overview</p>
+          <h1 id="overviewTitle">Hello there</h1>
+          <p class="subtitle">Here’s a quick look at your invoice activity.</p>
+        </div>
+        <button class="overview-create" id="overviewCreateBtn" type="button"><span>＋</span> Create invoice</button>
+      </div>
+
+      <div class="overview-stats">
+        <article class="overview-stat lavender">
+          <span class="stat-icon">↗</span>
+          <p>Total invoiced</p>
+          <strong id="overviewTotal">₹0.00</strong>
+          <small>Current invoice value</small>
+        </article>
+        <article class="overview-stat grey">
+          <span class="stat-icon">▤</span>
+          <p>Invoices</p>
+          <strong>00</strong>
+          <small>Saved on this device</small>
+        </article>
+        <article class="overview-stat pink">
+          <span class="stat-icon">◷</span>
+          <p>Due soon</p>
+          <strong id="overviewDueCount">00</strong>
+          <small id="overviewDueDate">No due date</small>
+        </article>
+      </div>
+
+      <div class="overview-grid">
+        <article class="activity-card">
+          <div class="card-heading">
+            <div><p class="eyebrow">Recent activity</p><h2>Latest invoice</h2></div>
+            <button type="button" id="viewInvoiceBtn">View invoice →</button>
+          </div>
+          <div class="invoice-list-head"><span>Client</span><span>Invoice</span><span>Due date</span><span>Amount</span><span>Status</span></div>
+          <button class="invoice-list-row" id="recentInvoiceRow" type="button">
+            <span class="client-cell"><i id="overviewClientInitial">C</i><b><strong id="overviewClient">No client added</strong><small id="overviewClientEmail">No email added</small></b></span>
+            <span id="overviewInvoiceNumber">Untitled</span>
+            <span id="overviewInvoiceDue">—</span>
+            <strong id="overviewInvoiceAmount">₹0.00</strong>
+            <span class="status-pill">Draft</span>
+          </button>
+        </article>
+
+        <article class="quick-card">
+          <span class="quick-mark">S</span>
+          <div>
+            <p class="eyebrow">Quick start</p>
+            <h2>Ready for the next one?</h2>
+            <p>Your details are saved locally, so creating another invoice takes only a minute.</p>
+          </div>
+          <button id="quickCreateBtn" type="button">New invoice <span>→</span></button>
+        </article>
+      </div>
+    </section>
+
+    <section class="setup-page" id="companyPage" aria-labelledby="companyTitle">
+      <div class="setup-heading">
+        <div><p class="eyebrow">Business setup</p><h1 id="companyTitle">Company details</h1><p class="subtitle">Save your company information once and reuse it on every invoice.</p></div>
+      </div>
+      <div class="setup-card">
+        <div class="setup-card-title"><span class="setup-icon lavender">▦</span><div><h2>Business information</h2><p>This information appears in the “From” section of your invoice.</p></div></div>
+        <div class="logo-row">
+          <button class="logo-upload" id="companyLogoBtn" type="button"><span><strong>＋</strong> Add logo</span></button>
+          <div class="field grow"><label for="companyName">Company name</label><input id="companyName" type="text" placeholder="Company name"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label for="companyEmail">Company email</label><input id="companyEmail" type="email" placeholder="Company email"></div>
+          <div class="field"><label for="companyPhone">Phone number</label><input id="companyPhone" type="tel" placeholder="Phone number"></div>
+        </div>
+        <div class="field"><label for="companyAddress">Company address</label><textarea id="companyAddress" rows="3" placeholder="Company address"></textarea></div>
+        <button class="save-setup-btn" id="saveCompanyBtn" type="button">Save company details</button>
+      </div>
+    </section>
+
+    <section class="setup-page" id="productsPage" aria-labelledby="productsTitle">
+      <div class="setup-heading">
+        <div><p class="eyebrow">Product catalogue</p><h1 id="productsTitle">Products & services</h1><p class="subtitle">Create reusable products and quickly add them to an invoice.</p></div>
+      </div>
+      <div class="product-layout">
+        <div class="setup-card product-form-card">
+          <div class="setup-card-title"><span class="setup-icon pink">＋</span><div><h2>Add a product</h2><p>Enter a name and unit price.</p></div></div>
+          <div class="field"><label for="catalogProductName">Product or service name</label><input id="catalogProductName" type="text" placeholder="Product name"></div>
+          <div class="grid-2">
+            <div class="field"><label for="catalogProductPrice">Unit price</label><input id="catalogProductPrice" type="number" min="0" step="0.01" placeholder="0.00"></div>
+            <div class="field"><label for="catalogProductUnit">Unit</label><select id="catalogProductUnit"><option>Item</option><option>Hour</option><option>Day</option><option>Project</option></select></div>
+          </div>
+          <button class="save-setup-btn" id="addProductBtn" type="button">Add to catalogue</button>
+        </div>
+        <div class="setup-card catalogue-card">
+          <div class="setup-card-title"><span class="setup-icon grey">◇</span><div><h2>Saved products</h2><p id="catalogueCount">No products saved</p></div></div>
+          <div class="catalogue-list" id="catalogueList"><p class="empty-catalogue">Your saved products will appear here.</p></div>
+        </div>
+      </div>
+    </section>
+
     <section class="editor" aria-labelledby="editorTitle">
       <div class="editor-heading">
         <div>
-          <p class="eyebrow">Invoice builder</p>
-          <h1 id="editorTitle">Create an invoice</h1>
-          <p class="subtitle">Fill in the details. Your preview updates instantly.</p>
+          <p class="eyebrow">Invoice workspace</p>
+          <h1 id="editorTitle">Create a new invoice</h1>
+          <p class="subtitle">Add your business and client details, then generate a polished invoice.</p>
         </div>
+      </div>
+
+      <div class="summary-cards" aria-label="Invoice summary">
+        <div class="summary-card lavender"><span>Invoice</span><strong id="summaryInvoice">Untitled</strong><small>Current document</small></div>
+        <div class="summary-card grey"><span>Line items</span><strong id="summaryItems">1</strong><small>Products or services</small></div>
+        <div class="summary-card pink"><span>Estimated total</span><strong id="summaryTotal">₹0.00</strong><small>Including tax</small></div>
       </div>
 
       <div class="form-card">
@@ -43,22 +167,22 @@
           <input id="logoInput" type="file" accept="image/*" hidden>
           <div class="field grow">
             <label for="businessName">Business name</label>
-            <input id="businessName" type="text" value="Northstar Studio" placeholder="Your business name">
+            <input id="businessName" type="text" placeholder="Business name">
           </div>
         </div>
         <div class="grid-2">
           <div class="field">
             <label for="businessEmail">Email</label>
-            <input id="businessEmail" type="email" value="hello@northstar.studio" placeholder="hello@company.com">
+            <input id="businessEmail" type="email" placeholder="Business email">
           </div>
           <div class="field">
             <label for="businessPhone">Phone</label>
-            <input id="businessPhone" type="tel" value="+91 98765 43210" placeholder="+91 00000 00000">
+            <input id="businessPhone" type="tel" placeholder="Phone number">
           </div>
         </div>
         <div class="field">
           <label for="businessAddress">Address</label>
-          <textarea id="businessAddress" rows="2" placeholder="Business address">42 Residency Road, Bengaluru, Karnataka 560025</textarea>
+          <textarea id="businessAddress" rows="2" placeholder="Business address"></textarea>
         </div>
       </div>
 
@@ -67,7 +191,7 @@
         <div class="grid-2">
           <div class="field">
             <label for="invoiceNumber">Invoice number</label>
-            <div class="input-prefix"><span>#</span><input id="invoiceNumber" type="text" value="INV-2026-001"></div>
+            <div class="input-prefix"><span>#</span><input id="invoiceNumber" type="text" placeholder="Invoice number"></div>
           </div>
           <div class="field">
             <label for="currency">Currency</label>
@@ -96,21 +220,25 @@
         <div class="grid-2">
           <div class="field">
             <label for="clientName">Client name</label>
-            <input id="clientName" type="text" value="Acme Technologies Pvt. Ltd." placeholder="Client or company name">
+            <input id="clientName" type="text" placeholder="Client or company name">
           </div>
           <div class="field">
             <label for="clientEmail">Client email</label>
-            <input id="clientEmail" type="email" value="accounts@acmetech.in" placeholder="client@company.com">
+            <input id="clientEmail" type="email" placeholder="Client email">
           </div>
         </div>
         <div class="field">
           <label for="clientAddress">Client address</label>
-          <textarea id="clientAddress" rows="2" placeholder="Client billing address">89 Cyber Park, Gurugram, Haryana 122002</textarea>
+          <textarea id="clientAddress" rows="2" placeholder="Client billing address"></textarea>
         </div>
       </div>
 
       <div class="form-card">
         <div class="section-label item-label"><span>04</span> Items <small id="itemCount">2 items</small></div>
+        <div class="product-picker">
+          <select id="productPicker" aria-label="Select a saved product"><option value="">Select a saved product</option></select>
+          <button id="addSelectedProductBtn" type="button">Add selected product</button>
+        </div>
         <div class="item-head" aria-hidden="true"><span>Description</span><span>Qty</span><span>Rate</span><span>Amount</span><span></span></div>
         <div id="itemsContainer"></div>
         <button class="add-item" id="addItemBtn" type="button"><span>＋</span> Add line item</button>
@@ -120,22 +248,27 @@
         <div class="section-label"><span>05</span> Notes & payment</div>
         <div class="field">
           <label for="notes">Notes</label>
-          <textarea id="notes" rows="3" placeholder="Add a thank-you note or extra details">Thank you for your business! Payment is due within 14 days.</textarea>
+          <textarea id="notes" rows="3" placeholder="Add a thank-you note or extra details"></textarea>
         </div>
         <div class="field">
           <label for="paymentDetails">Payment details</label>
-          <textarea id="paymentDetails" rows="3" placeholder="Bank account, UPI ID, or payment instructions">Bank: HDFC Bank · A/C: 000123456789 · IFSC: HDFC0001234</textarea>
+          <textarea id="paymentDetails" rows="3" placeholder="Bank account, UPI ID, or payment instructions"></textarea>
         </div>
+      </div>
+
+      <div class="generate-bar">
+        <div><strong>Ready to review?</strong><span>Generate your invoice to check every detail before downloading.</span></div>
+        <button class="generate-btn" id="generateBtn" type="button">Generate invoice <span>→</span></button>
       </div>
     </section>
 
     <aside class="preview-panel" aria-labelledby="previewTitle">
       <div class="preview-toolbar">
         <div>
-          <p class="eyebrow">Live preview</p>
-          <h2 id="previewTitle">Your invoice</h2>
+          <button class="back-btn" id="backToEditBtn" type="button">← Back to edit</button>
+          <h2 id="previewTitle">Invoice preview</h2>
         </div>
-        <span class="page-label">A4</span>
+        <div class="preview-meta"><span>DOCUMENT 01</span><span class="page-label">A4 / PORTRAIT</span></div>
       </div>
 
       <article class="invoice-sheet" id="invoiceSheet">
@@ -144,9 +277,9 @@
           <div class="invoice-business">
             <div class="invoice-logo" id="pLogo"><span>NS</span><img alt=""></div>
             <div>
-              <h3 id="pBusinessName">Northstar Studio</h3>
-              <p id="pBusinessEmail">hello@northstar.studio</p>
-              <p id="pBusinessPhone">+91 98765 43210</p>
+              <h3 id="pBusinessName">Your business</h3>
+              <p id="pBusinessEmail"></p>
+              <p id="pBusinessPhone"></p>
             </div>
           </div>
           <div class="invoice-title">
@@ -158,13 +291,13 @@
         <div class="invoice-address-row">
           <div>
             <span class="mini-label">FROM</span>
-            <p id="pBusinessAddress">42 Residency Road, Bengaluru,<br>Karnataka 560025</p>
+            <p id="pBusinessAddress"></p>
           </div>
           <div>
             <span class="mini-label">BILL TO</span>
-            <strong id="pClientName">Acme Technologies Pvt. Ltd.</strong>
-            <p id="pClientEmail">accounts@acmetech.in</p>
-            <p id="pClientAddress">89 Cyber Park, Gurugram,<br>Haryana 122002</p>
+            <strong id="pClientName">Client name</strong>
+            <p id="pClientEmail"></p>
+            <p id="pClientAddress"></p>
           </div>
           <div class="date-block">
             <div><span>Issue date</span><strong id="pIssueDate">—</strong></div>
@@ -208,6 +341,7 @@
       <p class="privacy-note"><span>●</span> Your invoice stays private and is saved only on this device.</p>
     </aside>
   </main>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="script.js"></script>

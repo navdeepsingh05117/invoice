@@ -7,8 +7,7 @@ const fieldIds = [
 
 let state = {
   items: [
-    { name: "Brand identity design", detail: "Logo system, typography & colour palette", qty: 1, rate: 45000 },
-    { name: "Website design", detail: "Responsive UI design — 8 key pages", qty: 1, rate: 65000 }
+    { name: "", detail: "", qty: 1, rate: 0 }
   ],
   logo: ""
 };
@@ -33,6 +32,11 @@ function setInitialDates() {
 }
 
 function renderItems() {
+  state.items = state.items.map(item => ({
+    ...item,
+    qty: Math.max(0, Number(item.qty) || 0),
+    rate: Math.max(0, Number(item.rate) || 0)
+  }));
   $("itemsContainer").innerHTML = state.items.map((item, index) => `
     <div class="line-item" data-index="${index}">
       <input class="item-description" data-field="name" value="${escapeHtml(item.name)}" placeholder="Item description" aria-label="Item ${index + 1} description">
@@ -82,6 +86,19 @@ function renderPreview() {
   $("pDiscount").textContent = `−${money(discount)}`;
   $("pTax").textContent = money(tax);
   $("pTotal").textContent = money(taxable + tax);
+  $("summaryInvoice").textContent = value("invoiceNumber") || "Untitled";
+  $("summaryItems").textContent = state.items.length;
+  $("summaryTotal").textContent = money(taxable + tax);
+  $("overviewTotal").textContent = money(taxable + tax);
+  $("overviewInvoiceAmount").textContent = money(taxable + tax);
+  $("overviewInvoiceNumber").textContent = value("invoiceNumber") || "Untitled";
+  $("overviewClient").textContent = value("clientName") || "No client added";
+  $("overviewClientEmail").textContent = value("clientEmail") || "No email added";
+  $("overviewClientInitial").textContent = (value("clientName")[0] || "C").toUpperCase();
+  $("overviewInvoiceDue").textContent = formatDate($("dueDate").value);
+  $("overviewDueDate").textContent = $("dueDate").value
+    ? `Due ${formatDate($("dueDate").value)}`
+    : "No due date";
   updateLogo();
   saveState();
 }
@@ -102,7 +119,7 @@ function updateLogo() {
 let saveTimer;
 function saveState() {
   const form = Object.fromEntries(fieldIds.map(id => [id, $(id).value]));
-  localStorage.setItem("slateInvoice", JSON.stringify({ form, items: state.items, logo: state.logo }));
+  localStorage.setItem("slateInvoiceV2", JSON.stringify({ form, items: state.items, logo: state.logo }));
   $("saveStatus").innerHTML = '<span class="status-dot"></span>Saving…';
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => $("saveStatus").innerHTML = '<span class="status-dot"></span>Saved locally', 350);
@@ -110,13 +127,13 @@ function saveState() {
 
 function loadState() {
   try {
-    const saved = JSON.parse(localStorage.getItem("slateInvoice"));
+    const saved = JSON.parse(localStorage.getItem("slateInvoiceV2"));
     if (!saved) return;
     Object.entries(saved.form || {}).forEach(([id, fieldValue]) => { if ($(id)) $(id).value = fieldValue; });
     if (Array.isArray(saved.items) && saved.items.length) state.items = saved.items;
     state.logo = saved.logo || "";
   } catch (_) {
-    localStorage.removeItem("slateInvoice");
+    localStorage.removeItem("slateInvoiceV2");
   }
 }
 
@@ -133,10 +150,17 @@ $("itemsContainer").addEventListener("input", (event) => {
   if (!row) return;
   const index = Number(row.dataset.index);
   const field = event.target.dataset.field;
-  state.items[index][field] = field === "name" ? event.target.value : Number(event.target.value);
-  renderItems();
-  const next = document.querySelector(`.line-item[data-index="${index}"] [data-field="${field}"]`);
-  if (next) { next.focus(); next.setSelectionRange?.(next.value.length, next.value.length); }
+  if (field === "name") {
+    state.items[index][field] = event.target.value;
+  } else {
+    const enteredValue = Number(event.target.value);
+    const safeValue = Math.max(0, Number.isFinite(enteredValue) ? enteredValue : 0);
+    state.items[index][field] = safeValue;
+    if (enteredValue < 0) event.target.value = 0;
+  }
+  row.querySelector(".line-amount").textContent =
+    money(state.items[index].qty * state.items[index].rate);
+  renderPreview();
 });
 
 $("itemsContainer").addEventListener("click", (event) => {
@@ -168,9 +192,65 @@ $("downloadBtn").addEventListener("click", () => {
   setTimeout(() => window.print(), 250);
 });
 
+$("generateBtn").addEventListener("click", () => {
+  const required = [
+    ["businessName", "Please enter your business name."],
+    ["invoiceNumber", "Please enter an invoice number."],
+    ["clientName", "Please enter the client name."]
+  ];
+  const missing = required.find(([id]) => !value(id));
+  if (missing) {
+    showToast(missing[1]);
+    $(missing[0]).focus();
+    return;
+  }
+  if (state.items.some(item => !String(item.name).trim() || Number(item.qty) <= 0)) {
+    showToast("Please complete each line item.");
+    return;
+  }
+  renderPreview();
+  document.body.classList.add("preview-mode");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+$("backToEditBtn").addEventListener("click", () => {
+  document.body.classList.remove("preview-mode");
+  document.body.classList.add("invoice-mode");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+function showInvoiceEditor() {
+  document.body.classList.remove("preview-mode");
+  document.body.classList.add("invoice-mode");
+  document.querySelectorAll("[data-view]").forEach(button => {
+    button.classList.toggle("active", button.dataset.view === "invoice");
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function showOverview() {
+  document.body.classList.remove("preview-mode", "invoice-mode");
+  document.querySelectorAll("[data-view]").forEach(button => {
+    button.classList.toggle("active", button.dataset.view === "overview");
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.querySelectorAll("[data-view]").forEach(button => {
+  button.addEventListener("click", () => {
+    if (button.dataset.view === "overview") showOverview();
+    if (button.dataset.view === "invoice") showInvoiceEditor();
+    if (button.dataset.view === "transactions") showToast("Transaction tracking is coming soon.");
+  });
+});
+
+["overviewCreateBtn", "quickCreateBtn"].forEach(id => $(id).addEventListener("click", showInvoiceEditor));
+$("viewInvoiceBtn").addEventListener("click", showInvoiceEditor);
+$("recentInvoiceRow").addEventListener("click", showInvoiceEditor);
+
 $("newInvoiceBtn").addEventListener("click", () => {
   if (!confirm("Start a new invoice? Your current invoice will be cleared.")) return;
-  localStorage.removeItem("slateInvoice");
+  localStorage.removeItem("slateInvoiceV2");
   location.reload();
 });
 
