@@ -12,33 +12,33 @@
 </head>
 <body>
   <aside class="sidebar">
-    <a class="side-brand" href="#" aria-label="Slate Invoice home">Slate<span>.</span></a>
+    <a class="side-brand" href="#" aria-label="Slate Invoice home"><span class="side-brand-mark"><i data-lucide="file-check-2"></i></span>Slate<span>.</span></a>
     <div class="side-profile">
       <span class="profile-avatar" id="profileAvatar">YB</span>
       <div><strong id="profileBusinessName">Your business</strong><small id="profileBusinessEmail">Business email</small></div>
     </div>
     <nav class="side-nav" aria-label="Main navigation">
-      <button class="active" type="button" data-view="overview"><span>⌂</span>Overview</button>
-      <button type="button" data-view="invoice"><span>▤</span>Invoices</button>
-      <button type="button" data-view="company"><span>▦</span>Company details</button>
-      <button type="button" data-view="products"><span>◇</span>Products</button>
-      <button type="button" data-view="transactions"><span>⇄</span>Transactions</button>
+      <button class="active" type="button" data-view="overview"><span><i data-lucide="layout-dashboard"></i></span>Overview</button>
+      <button type="button" data-view="invoice"><span><i data-lucide="receipt-text"></i></span>Invoices</button>
+      <button type="button" data-view="company"><span><i data-lucide="building-2"></i></span>Company details</button>
+      <button type="button" data-view="products"><span><i data-lucide="package"></i></span>Products</button>
+      <button type="button" data-view="transactions"><span><i data-lucide="arrow-left-right"></i></span>Transactions</button>
     </nav>
     <div class="side-bottom">
-      <a href="#"><span>?</span>Support</a>
+      <a href="#"><span><i data-lucide="circle-help"></i></span>Support</a>
       <p>Invoices made simple.<br>Data stays on your device.</p>
     </div>
   </aside>
   <div class="app-main">
   <header class="topbar">
     <a class="brand" href="#" aria-label="Slate Invoice home">
-      <span class="brand-mark">S</span>
+      <span class="brand-mark"><i data-lucide="file-text"></i></span>
       <span>Invoice creator</span>
     </a>
     <div class="top-actions">
       <span class="save-status" id="saveStatus"><span class="status-dot"></span>Saved locally</span>
-      <button class="btn btn-ghost" id="newInvoiceBtn" type="button"><span aria-hidden="true">＋</span> New</button>
-      <button class="btn btn-primary preview-only" id="downloadBtn" type="button"><span aria-hidden="true">↓</span> Download PDF</button>
+      <button class="btn btn-ghost" id="newInvoiceBtn" type="button"><i data-lucide="plus"></i> New</button>
+      <button class="btn btn-primary preview-only" id="downloadBtn" type="button"><i data-lucide="download"></i> Download PDF</button>
     </div>
   </header>
 
@@ -50,24 +50,24 @@
           <h1 id="overviewTitle">Hello there</h1>
           <p class="subtitle">Here’s a quick look at your invoice activity.</p>
         </div>
-        <button class="overview-create" id="overviewCreateBtn" type="button"><span>＋</span> Create invoice</button>
+        <button class="overview-create" id="overviewCreateBtn" type="button"><i data-lucide="plus"></i> Create invoice</button>
       </div>
 
       <div class="overview-stats">
         <article class="overview-stat lavender">
-          <span class="stat-icon">↗</span>
+          <span class="stat-icon"><i data-lucide="trending-up"></i></span>
           <p>Total invoiced</p>
           <strong id="overviewTotal">₹0.00</strong>
           <small>Current invoice value</small>
         </article>
         <article class="overview-stat grey">
-          <span class="stat-icon">▤</span>
+          <span class="stat-icon"><i data-lucide="files"></i></span>
           <p>Invoices</p>
-          <strong>00</strong>
-          <small>Saved on this device</small>
+          <strong id="overviewInvoiceCount">00</strong>
+          <small>Generated on this device</small>
         </article>
         <article class="overview-stat pink">
-          <span class="stat-icon">◷</span>
+          <span class="stat-icon"><i data-lucide="clock-3"></i></span>
           <p>Due soon</p>
           <strong id="overviewDueCount">00</strong>
           <small id="overviewDueDate">No due date</small>
@@ -77,27 +77,22 @@
       <div class="overview-grid">
         <article class="activity-card">
           <div class="card-heading">
-            <div><p class="eyebrow">Recent activity</p><h2>Latest invoice</h2></div>
-            <button type="button" id="viewInvoiceBtn">View invoice →</button>
+            <div><p class="eyebrow">Invoice history</p><h2>Generated invoices</h2></div>
           </div>
           <div class="invoice-list-head"><span>Client</span><span>Invoice</span><span>Due date</span><span>Amount</span><span>Status</span></div>
-          <button class="invoice-list-row" id="recentInvoiceRow" type="button">
-            <span class="client-cell"><i id="overviewClientInitial">C</i><b><strong id="overviewClient">No client added</strong><small id="overviewClientEmail">No email added</small></b></span>
-            <span id="overviewInvoiceNumber">Untitled</span>
-            <span id="overviewInvoiceDue">—</span>
-            <strong id="overviewInvoiceAmount">₹0.00</strong>
-            <span class="status-pill">Draft</span>
-          </button>
+          <div class="invoice-history-list" id="invoiceHistoryList">
+            <p class="empty-history">No invoices generated yet. Create your first invoice to see it here.</p>
+          </div>
         </article>
 
         <article class="quick-card">
-          <span class="quick-mark">S</span>
+          <span class="quick-mark"><i data-lucide="receipt-text"></i></span>
           <div>
             <p class="eyebrow">Quick start</p>
             <h2>Ready for the next one?</h2>
             <p>Your details are saved locally, so creating another invoice takes only a minute.</p>
           </div>
-          <button id="quickCreateBtn" type="button">New invoice <span>→</span></button>
+          <button id="quickCreateBtn" type="button">New invoice <i data-lucide="arrow-right"></i></button>
         </article>
       </div>
     </section>
@@ -107,7 +102,7 @@
         <div><p class="eyebrow">Business setup</p><h1 id="companyTitle">Company details</h1><p class="subtitle">Save your company information once and reuse it on every invoice.</p></div>
       </div>
       <div class="setup-card">
-        <div class="setup-card-title"><span class="setup-icon lavender">▦</span><div><h2>Business information</h2><p>This information appears in the “From” section of your invoice.</p></div></div>
+        <div class="setup-card-title"><span class="setup-icon lavender"><i data-lucide="building-2"></i></span><div><h2>Business information</h2><p>This information appears in the “From” section of your invoice.</p></div></div>
         <div class="logo-row">
           <button class="logo-upload" id="companyLogoBtn" type="button"><span><strong>＋</strong> Add logo</span></button>
           <div class="field grow"><label for="companyName">Company name</label><input id="companyName" type="text" placeholder="Company name"></div>
@@ -127,7 +122,7 @@
       </div>
       <div class="product-layout">
         <div class="setup-card product-form-card">
-          <div class="setup-card-title"><span class="setup-icon pink">＋</span><div><h2>Add a product</h2><p>Enter a name and unit price.</p></div></div>
+          <div class="setup-card-title"><span class="setup-icon pink"><i data-lucide="package-plus"></i></span><div><h2>Add a product</h2><p>Enter a name and unit price.</p></div></div>
           <div class="field"><label for="catalogProductName">Product or service name</label><input id="catalogProductName" type="text" placeholder="Product name"></div>
           <div class="grid-2">
             <div class="field"><label for="catalogProductPrice">Unit price</label><input id="catalogProductPrice" type="number" min="0" step="0.01" placeholder="0.00"></div>
@@ -138,7 +133,7 @@
           <button class="save-setup-btn" id="addProductBtn" type="button">Add to catalogue</button>
         </div>
         <div class="setup-card catalogue-card">
-          <div class="setup-card-title"><span class="setup-icon grey">◇</span><div><h2>Saved products</h2><p id="catalogueCount">No products saved</p></div></div>
+          <div class="setup-card-title"><span class="setup-icon grey"><i data-lucide="boxes"></i></span><div><h2>Saved products</h2><p id="catalogueCount">No products saved</p></div></div>
           <div class="catalogue-list" id="catalogueList"><p class="empty-catalogue">Your saved products will appear here.</p></div>
         </div>
       </div>
@@ -242,7 +237,7 @@
         </div>
         <div class="item-head" aria-hidden="true"><span>Description</span><span>Qty</span><span>Rate</span><span>Disc.</span><span>Tax</span><span>Amount</span><span></span></div>
         <div id="itemsContainer"></div>
-        <button class="add-item" id="addItemBtn" type="button"><span>＋</span> Add line item</button>
+        <button class="add-item" id="addItemBtn" type="button"><i data-lucide="plus"></i> Add line item</button>
       </div>
 
       <div class="form-card">
@@ -259,7 +254,7 @@
 
       <div class="generate-bar">
         <div><strong>Ready to review?</strong><span>Generate your invoice to check every detail before downloading.</span></div>
-        <button class="generate-btn" id="generateBtn" type="button">Generate invoice <span>→</span></button>
+        <button class="generate-btn" id="generateBtn" type="button">Generate invoice <i data-lucide="arrow-right"></i></button>
       </div>
     </section>
 
@@ -285,7 +280,7 @@
           </div>
           <div class="invoice-title">
             <h2>INVOICE</h2>
-            <p id="pInvoiceNumber">#INV-2026-001</p>
+            <p id="pInvoiceNumber">#Untitled</p>
           </div>
         </header>
 
@@ -344,7 +339,21 @@
   </main>
   </div>
 
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <section class="confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalMessage">
+      <button class="modal-close" id="modalCloseBtn" type="button" aria-label="Close confirmation">×</button>
+      <span class="modal-sign" aria-hidden="true"><i data-lucide="triangle-alert"></i></span>
+      <p class="eyebrow">Please confirm</p>
+      <h2 id="modalTitle">Start a new invoice?</h2>
+      <p id="modalMessage">Your current invoice details will be cleared from this device. This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="modal-cancel" id="modalCancelBtn" type="button">Keep editing</button>
+        <button class="modal-confirm" id="modalConfirmBtn" type="button">Clear & start new</button>
+      </div>
+    </section>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

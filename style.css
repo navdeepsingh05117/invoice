@@ -23,6 +23,7 @@ button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
 a { color: inherit; text-decoration: none; }
 h1, h2, h3, p { margin-top: 0; }
+.lucide { width: 1em; height: 1em; stroke-width: 1.8; }
 
 .sidebar {
   width: 258px;
@@ -38,10 +39,18 @@ h1, h2, h3, p { margin-top: 0; }
 }
 .side-brand {
   margin: 0 12px 58px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
   font: 700 29px "Space Grotesk", sans-serif;
   letter-spacing: -.07em;
 }
 .side-brand span { color: #8186ef; }
+.side-brand-mark {
+  width: 34px; height: 34px; display: grid; place-items: center;
+  border-radius: 11px; color: #111 !important; background: var(--lavender);
+}
+.side-brand-mark .lucide { width: 18px; height: 18px; }
 .side-profile {
   padding: 14px;
   margin-bottom: 46px;
@@ -111,6 +120,7 @@ h1, h2, h3, p { margin-top: 0; }
   width: 35px; height: 35px; display: grid; place-items: center;
   border-radius: 50%; color: #111; background: var(--lavender); font-size: 12px;
 }
+.brand-mark .lucide { width: 16px; height: 16px; }
 .top-actions { display: flex; align-items: center; gap: 10px; }
 .save-status { margin-right: 10px; color: #898b8f; font-size: 10px; }
 .status-dot { width: 6px; height: 6px; display: inline-block; margin-right: 6px; border-radius: 50%; background: #63aa79; }
@@ -227,7 +237,7 @@ body.products-mode #productsPage { display: block; animation: pageIn .42s cubic-
   font-size: 11px;
   font-weight: 700;
 }
-.overview-create span { margin-right: 7px; font-size: 17px; }
+.overview-create .lucide { width: 16px; height: 16px; margin-right: 7px; vertical-align: -3px; }
 .overview-stats {
   margin-bottom: 22px;
   display: grid;
@@ -258,6 +268,7 @@ body.products-mode #productsPage { display: block; animation: pageIn .42s cubic-
   border-radius: 50%;
   font-size: 18px;
 }
+.stat-icon .lucide, .setup-icon .lucide, .quick-mark .lucide { width: 19px; height: 19px; }
 .overview-stat p { margin: 25px 0 0; font-weight: 600; }
 .overview-stat strong { margin-top: auto; font: 700 30px "Space Grotesk"; letter-spacing: -.055em; }
 .overview-stat small { margin-top: 4px; color: rgba(0,0,0,.52); font-size: 9px; }
@@ -290,6 +301,16 @@ body.products-mode #productsPage { display: block; animation: pageIn .42s cubic-
   gap: 12px;
   align-items: center;
 }
+.invoice-history-list { display: grid; gap: 9px; }
+.empty-history {
+  padding: 42px 18px;
+  margin: 0;
+  border: 1px dashed #d8d8d8;
+  border-radius: 15px;
+  color: #9a9b9e;
+  font-size: 10px;
+  text-align: center;
+}
 .invoice-list-head { padding: 0 15px 11px; color: #9a9b9e; font-size: 8px; font-weight: 700; text-transform: uppercase; }
 .invoice-list-row {
   width: 100%;
@@ -313,7 +334,7 @@ body.products-mode #productsPage { display: block; animation: pageIn .42s cubic-
 .client-cell b { min-width: 0; }
 .client-cell strong { overflow: hidden; color: #111; text-overflow: ellipsis; white-space: nowrap; }
 .client-cell small { margin-top: 3px; overflow: hidden; color: #999; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.status-pill { padding: 6px 9px; border-radius: 100px; color: #5b5eaa; background: #e9eaff; font-size: 8px; font-weight: 700; text-align: center; }
+.status-pill { padding: 6px 9px; border-radius: 100px; color: #287447; background: #ddf4e5; font-size: 8px; font-weight: 700; text-align: center; }
 .quick-card {
   display: flex;
   flex-direction: column;
@@ -468,7 +489,7 @@ input:focus, textarea:focus, select:focus { border-color: #8f94e8; box-shadow: 0
 .line-amount { text-align: right; font-size: 11px; font-weight: 700; }
 .remove-item { width: 27px; height: 27px; border: 0; border-radius: 50%; color: #999; background: white; font-size: 18px; }
 .remove-item:hover { color: white; background: #111; }
-.add-item { margin-top: 13px; padding: 10px 14px; border: 0; border-radius: 10px; color: #111; background: var(--mist); font-size: 10px; font-weight: 700; }
+.add-item { margin-top: 13px; padding: 10px 14px; border: 0; border-radius: 10px; display: inline-flex; align-items: center; gap: 7px; color: #111; background: var(--mist); font-size: 10px; font-weight: 700; }
 .generate-bar {
   margin-top: 30px;
   padding: 25px 27px;
@@ -489,8 +510,8 @@ input:focus, textarea:focus, select:focus { border-color: #8f94e8; box-shadow: 0
 }
 .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(0,0,0,.18); }
 .generate-btn:active { transform: translateY(0) scale(.98); }
-.generate-btn span { font-size: 18px; transition: transform .18s; }
-.generate-btn:hover span { transform: translateX(4px); }
+.generate-btn .lucide { width: 17px; height: 17px; transition: transform .18s; }
+.generate-btn:hover .lucide { transform: translateX(4px); }
 
 .preview-panel {
   display: none;
@@ -567,11 +588,66 @@ body.preview-mode .preview-panel { display: block; animation: pageIn .4s cubic-b
 .privacy-note { max-width: 790px; margin: 17px auto 0; text-align: center; color: #8d8f92; font-size: 9px; }
 .privacy-note span { color: #63aa79; font-size: 7px; }
 .toast {
-  position: fixed; left: 50%; bottom: 24px; z-index: 100; padding: 12px 17px; border-radius: 100px;
+  min-width: 260px;
+  position: fixed; left: 50%; bottom: 24px; z-index: 100; padding: 11px 17px 11px 11px; border-radius: 14px;
+  display: flex; align-items: center; gap: 10px;
   color: white; background: #111; font-size: 10px; font-weight: 700;
   box-shadow: 0 12px 35px rgba(0,0,0,.2); transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: .25s;
 }
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
+.toast-icon {
+  width: 28px; height: 28px; display: grid; place-items: center; flex: 0 0 auto;
+  border-radius: 9px; color: #111; background: var(--lavender); font-size: 13px;
+}
+.toast.warning .toast-icon { background: #ffd9aa; }
+.toast.success .toast-icon { background: #bdebc9; }
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  visibility: hidden;
+  opacity: 0;
+  background: rgba(12,13,16,.48);
+  backdrop-filter: blur(7px);
+  transition: opacity .25s ease, visibility .25s ease;
+}
+.modal-backdrop.show { visibility: visible; opacity: 1; }
+.confirm-modal {
+  width: min(100%, 430px);
+  padding: 32px;
+  position: relative;
+  border-radius: 25px;
+  background: white;
+  box-shadow: 0 30px 90px rgba(0,0,0,.24);
+  transform: translateY(18px) scale(.97);
+  transition: transform .3s cubic-bezier(.16,1,.3,1);
+}
+.modal-backdrop.show .confirm-modal { transform: translateY(0) scale(1); }
+.modal-close {
+  width: 32px; height: 32px; position: absolute; top: 18px; right: 18px;
+  border: 0; border-radius: 50%; color: #777; background: #f4f4f4; font-size: 18px;
+  transition: color .2s ease, background .2s ease, transform .2s ease;
+}
+.modal-close:hover { color: white; background: #111; transform: rotate(8deg); }
+.modal-sign {
+  width: 54px; height: 54px; margin-bottom: 23px; display: grid; place-items: center;
+  border-radius: 17px; color: #8d5700; background: #ffe2b8;
+  font: 700 22px "Space Grotesk";
+}
+.confirm-modal .eyebrow { margin-bottom: 7px; color: #a36c12; }
+.confirm-modal h2 { margin: 0 0 10px; font: 700 25px "Space Grotesk"; letter-spacing: -.045em; }
+.confirm-modal > p:not(.eyebrow) { margin-bottom: 27px; color: #77797d; font-size: 11px; line-height: 1.65; }
+.modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-actions button {
+  min-height: 47px; border: 0; border-radius: 12px; font-size: 10px; font-weight: 700;
+  transition: transform .2s ease, background .2s ease;
+}
+.modal-actions button:hover { transform: translateY(-2px); }
+.modal-cancel { color: #333; background: #f1f1f1; }
+.modal-confirm { color: white; background: #111; }
 
 @keyframes pageIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -592,7 +668,8 @@ body.preview-mode .preview-panel { display: block; animation: pageIn .4s cubic-b
 
 @media (max-width: 930px) {
   .sidebar { width: 82px; padding: 33px 13px; }
-  .side-brand { margin: 0 auto 45px; font-size: 22px; }
+  .side-brand { margin: 0 auto 45px; font-size: 0; }
+  .side-brand > span:last-child { display: none; }
   .side-profile { padding: 0; background: transparent; justify-content: center; }
   .side-profile div, .side-nav button:not(.active), .side-nav button.active { font-size: 0; }
   .side-nav button, .side-bottom a { padding: 0; justify-content: center; }

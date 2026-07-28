@@ -10,14 +10,20 @@ let state = {
     { name: "", detail: "", qty: 1, rate: 0, discount: 0, tax: 0 }
   ],
   products: [],
+  history: [],
   logo: ""
 };
+let viewingGeneratedInvoice = false;
+let draftBackup = null;
+let suspendSave = false;
 
 const $ = (id) => document.getElementById(id);
 const money = (value) => {
   const code = $("currency").value;
   return `${currencySymbols[code]}${Number(value || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
+const moneyFor = (value, code = "INR") =>
+  `${currencySymbols[code] || code}${Number(value || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]));
 const formatDate = (value) => value ? new Date(`${value}T00:00:00`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 const value = (id) => $(id).value.trim();
@@ -27,6 +33,12 @@ const itemAmounts = item => {
   const discount = base * percent(item.discount) / 100;
   const tax = (base - discount) * percent(item.tax) / 100;
   return { base, discount, tax, total: base - discount + tax };
+};
+const invoiceTotals = items => {
+  const subtotal = items.reduce((sum, item) => sum + itemAmounts(item).base, 0);
+  const discount = items.reduce((sum, item) => sum + itemAmounts(item).discount, 0);
+  const tax = items.reduce((sum, item) => sum + itemAmounts(item).tax, 0);
+  return { subtotal, discount, tax, total: subtotal - discount + tax };
 };
 
 function setInitialDates() {
@@ -89,26 +101,14 @@ function renderPreview() {
     </tr>
   `).join("");
 
-  const subtotal = state.items.reduce((sum, item) => sum + itemAmounts(item).base, 0);
-  const discount = state.items.reduce((sum, item) => sum + itemAmounts(item).discount, 0);
-  const tax = state.items.reduce((sum, item) => sum + itemAmounts(item).tax, 0);
+  const { subtotal, discount, tax, total } = invoiceTotals(state.items);
   $("pSubtotal").textContent = money(subtotal);
   $("pDiscount").textContent = `−${money(discount)}`;
   $("pTax").textContent = money(tax);
-  $("pTotal").textContent = money(subtotal - discount + tax);
+  $("pTotal").textContent = money(total);
   $("summaryInvoice").textContent = value("invoiceNumber") || "Untitled";
   $("summaryItems").textContent = state.items.length;
-  $("summaryTotal").textContent = money(subtotal - discount + tax);
-  $("overviewTotal").textContent = money(subtotal - discount + tax);
-  $("overviewInvoiceAmount").textContent = money(subtotal - discount + tax);
-  $("overviewInvoiceNumber").textContent = value("invoiceNumber") || "Untitled";
-  $("overviewClient").textContent = value("clientName") || "No client added";
-  $("overviewClientEmail").textContent = value("clientEmail") || "No email added";
-  $("overviewClientInitial").textContent = (value("clientName")[0] || "C").toUpperCase();
-  $("overviewInvoiceDue").textContent = formatDate($("dueDate").value);
-  $("overviewDueDate").textContent = $("dueDate").value
-    ? `Due ${formatDate($("dueDate").value)}`
-    : "No due date";
+  $("summaryTotal").textContent = money(total);
   updateLogo();
   saveState();
 }
@@ -128,6 +128,7 @@ function updateLogo() {
 
 let saveTimer;
 function saveState() {
+  if (suspendSave) return;
   const form = Object.fromEntries(fieldIds.map(id => [id, $(id).value]));
   const company = {
     name: $("companyName").value,
@@ -136,7 +137,7 @@ function saveState() {
     address: $("companyAddress").value
   };
   localStorage.setItem("slateInvoiceV2", JSON.stringify({
-    form, items: state.items, products: state.products, company, logo: state.logo
+    form, items: state.items, products: state.products, history: state.history, company, logo: state.logo
   }));
   $("saveStatus").innerHTML = '<span class="status-dot"></span>Saving…';
   clearTimeout(saveTimer);
@@ -150,6 +151,7 @@ function loadState() {
     Object.entries(saved.form || {}).forEach(([id, fieldValue]) => { if ($(id)) $(id).value = fieldValue; });
     if (Array.isArray(saved.items) && saved.items.length) state.items = saved.items;
     if (Array.isArray(saved.products)) state.products = saved.products;
+    if (Array.isArray(saved.history)) state.history = saved.history;
     if (saved.company) {
       $("companyName").value = saved.company.name || "";
       $("companyEmail").value = saved.company.email || "";
@@ -162,10 +164,17 @@ function loadState() {
   }
 }
 
-function showToast(message) {
-  $("toast").textContent = message;
-  $("toast").classList.add("show");
-  setTimeout(() => $("toast").classList.remove("show"), 2200);
+let toastTimer;
+function showToast(message, type) {
+  const warningWords = /please|needs|select|smaller|complete|cannot/i;
+  const successWords = /saved|added|created|updated/i;
+  const toastType = type || (warningWords.test(message) ? "warning" : successWords.test(message) ? "success" : "info");
+  const icon = toastType === "warning" ? "!" : toastType === "success" ? "✓" : "i";
+  $("toast").className = `toast ${toastType}`;
+  $("toast").innerHTML = `<span class="toast-icon" aria-hidden="true">${icon}</span><span>${escapeHtml(message)}</span>`;
+  requestAnimationFrame(() => $("toast").classList.add("show"));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2600);
 }
 
 function updateCompanyProfile() {
@@ -249,15 +258,92 @@ $("generateBtn").addEventListener("click", () => {
     return;
   }
   renderPreview();
+  saveGeneratedInvoice();
   document.body.classList.add("preview-mode");
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
 $("backToEditBtn").addEventListener("click", () => {
   document.body.classList.remove("preview-mode");
+  if (viewingGeneratedInvoice && draftBackup) {
+    suspendSave = true;
+    Object.entries(draftBackup.form).forEach(([id, fieldValue]) => { if ($(id)) $(id).value = fieldValue; });
+    state.items = draftBackup.items;
+    state.logo = draftBackup.logo;
+    renderItems();
+    suspendSave = false;
+    viewingGeneratedInvoice = false;
+    draftBackup = null;
+    saveState();
+    showOverview();
+    return;
+  }
   document.body.classList.add("invoice-mode");
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
+
+function saveGeneratedInvoice() {
+  const form = Object.fromEntries(fieldIds.map(id => [id, $(id).value]));
+  const totals = invoiceTotals(state.items);
+  const generatedInvoice = {
+    form,
+    items: structuredClone(state.items),
+    logo: state.logo,
+    total: totals.total,
+    generatedAt: new Date().toISOString()
+  };
+  const existingIndex = state.history.findIndex(invoice =>
+    invoice.form.invoiceNumber === form.invoiceNumber
+  );
+  if (existingIndex >= 0) state.history.splice(existingIndex, 1);
+  state.history.unshift(generatedInvoice);
+  saveState();
+  renderInvoiceHistory();
+  showToast("Invoice generated and saved to Overview.", "success");
+}
+
+function renderInvoiceHistory() {
+  const totalGenerated = state.history.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0);
+  $("overviewTotal").textContent = moneyFor(totalGenerated, state.history[0]?.form.currency || "INR");
+  $("overviewInvoiceCount").textContent = String(state.history.length).padStart(2, "0");
+  $("overviewDueCount").textContent = String(state.history.length).padStart(2, "0");
+  $("overviewDueDate").textContent = state.history.length
+    ? `Latest due ${formatDate(state.history[0].form.dueDate)}`
+    : "No due date";
+  $("invoiceHistoryList").innerHTML = state.history.length
+    ? state.history.map((invoice, index) => {
+      const client = invoice.form.clientName || "Unnamed client";
+      return `
+        <button class="invoice-list-row" type="button" data-history-index="${index}">
+          <span class="client-cell"><i>${escapeHtml(client[0].toUpperCase())}</i><b><strong>${escapeHtml(client)}</strong><small>${escapeHtml(invoice.form.clientEmail || "No email")}</small></b></span>
+          <span>${escapeHtml(invoice.form.invoiceNumber || "Untitled")}</span>
+          <span>${formatDate(invoice.form.dueDate)}</span>
+          <strong>${moneyFor(invoice.total, invoice.form.currency)}</strong>
+          <span class="status-pill">Generated</span>
+        </button>`;
+    }).join("")
+    : '<p class="empty-history">No invoices generated yet. Create your first invoice to see it here.</p>';
+}
+
+function viewGeneratedInvoice(index) {
+  const invoice = state.history[index];
+  if (!invoice) return;
+  draftBackup = {
+    form: Object.fromEntries(fieldIds.map(id => [id, $(id).value])),
+    items: structuredClone(state.items),
+    logo: state.logo
+  };
+  viewingGeneratedInvoice = true;
+  suspendSave = true;
+  Object.entries(invoice.form).forEach(([id, fieldValue]) => { if ($(id)) $(id).value = fieldValue; });
+  state.items = structuredClone(invoice.items);
+  state.logo = invoice.logo || "";
+  renderItems();
+  suspendSave = false;
+  document.body.classList.remove("invoice-mode", "company-mode", "products-mode");
+  document.body.classList.add("preview-mode");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
 function showInvoiceEditor() {
   document.body.classList.remove("preview-mode", "company-mode", "products-mode");
@@ -296,8 +382,10 @@ document.querySelectorAll("[data-view]").forEach(button => {
 });
 
 ["overviewCreateBtn", "quickCreateBtn"].forEach(id => $(id).addEventListener("click", showInvoiceEditor));
-$("viewInvoiceBtn").addEventListener("click", showInvoiceEditor);
-$("recentInvoiceRow").addEventListener("click", showInvoiceEditor);
+$("invoiceHistoryList").addEventListener("click", event => {
+  const row = event.target.closest("[data-history-index]");
+  if (row) viewGeneratedInvoice(Number(row.dataset.historyIndex));
+});
 
 $("companyLogoBtn").addEventListener("click", () => $("logoInput").click());
 $("companyName").addEventListener("input", updateCompanyProfile);
@@ -383,9 +471,40 @@ $("productPicker").addEventListener("change", () => {
 });
 
 $("newInvoiceBtn").addEventListener("click", () => {
-  if (!confirm("Start a new invoice? Your current invoice will be cleared.")) return;
-  localStorage.removeItem("slateInvoiceV2");
+  openConfirmModal();
+});
+
+function openConfirmModal() {
+  $("modalBackdrop").classList.add("show");
+  $("modalBackdrop").setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  setTimeout(() => $("modalCancelBtn").focus(), 50);
+}
+
+function closeConfirmModal() {
+  $("modalBackdrop").classList.remove("show");
+  $("modalBackdrop").setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  $("newInvoiceBtn").focus();
+}
+
+$("modalCancelBtn").addEventListener("click", closeConfirmModal);
+$("modalCloseBtn").addEventListener("click", closeConfirmModal);
+$("modalBackdrop").addEventListener("click", event => {
+  if (event.target === $("modalBackdrop")) closeConfirmModal();
+});
+$("modalConfirmBtn").addEventListener("click", () => {
+  const saved = JSON.parse(localStorage.getItem("slateInvoiceV2") || "{}");
+  localStorage.setItem("slateInvoiceV2", JSON.stringify({
+    products: saved.products || [],
+    history: saved.history || [],
+    company: saved.company || {},
+    logo: saved.logo || ""
+  }));
   location.reload();
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && $("modalBackdrop").classList.contains("show")) closeConfirmModal();
 });
 
 loadState();
@@ -393,3 +512,5 @@ setInitialDates();
 updateCompanyProfile();
 renderItems();
 renderCatalogue();
+renderInvoiceHistory();
+if (window.lucide) window.lucide.createIcons();
