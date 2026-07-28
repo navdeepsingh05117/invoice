@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A fast, private invoice generator that works in your browser.">
+  <title>Slate Invoice — Invoice Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Slate Invoice home">
+      <span class="brand-mark">S</span>
+      <span>Slate Invoice</span>
+    </a>
+    <div class="top-actions">
+      <span class="save-status" id="saveStatus"><span class="status-dot"></span>Saved locally</span>
+      <button class="btn btn-ghost" id="newInvoiceBtn" type="button"><span aria-hidden="true">＋</span> New</button>
+      <button class="btn btn-primary" id="downloadBtn" type="button"><span aria-hidden="true">↓</span> Download PDF</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="editor" aria-labelledby="editorTitle">
+      <div class="editor-heading">
+        <div>
+          <p class="eyebrow">Invoice builder</p>
+          <h1 id="editorTitle">Create an invoice</h1>
+          <p class="subtitle">Fill in the details. Your preview updates instantly.</p>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="section-label"><span>01</span> Your business</div>
+        <div class="logo-row">
+          <button class="logo-upload" id="logoUploadBtn" type="button" aria-label="Upload business logo">
+            <span id="logoPlaceholder"><strong>＋</strong> Add logo</span>
+            <img id="logoPreview" alt="Business logo">
+          </button>
+          <input id="logoInput" type="file" accept="image/*" hidden>
+          <div class="field grow">
+            <label for="businessName">Business name</label>
+            <input id="businessName" type="text" value="Northstar Studio" placeholder="Your business name">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="businessEmail">Email</label>
+            <input id="businessEmail" type="email" value="hello@northstar.studio" placeholder="hello@company.com">
+          </div>
+          <div class="field">
+            <label for="businessPhone">Phone</label>
+            <input id="businessPhone" type="tel" value="+91 98765 43210" placeholder="+91 00000 00000">
+          </div>
+        </div>
+        <div class="field">
+          <label for="businessAddress">Address</label>
+          <textarea id="businessAddress" rows="2" placeholder="Business address">42 Residency Road, Bengaluru, Karnataka 560025</textarea>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="section-label"><span>02</span> Invoice details</div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="invoiceNumber">Invoice number</label>
+            <div class="input-prefix"><span>#</span><input id="invoiceNumber" type="text" value="INV-2026-001"></div>
+          </div>
+          <div class="field">
+            <label for="currency">Currency</label>
+            <select id="currency">
+              <option value="INR" selected>INR — Indian Rupee</option>
+              <option value="USD">USD — US Dollar</option>
+              <option value="EUR">EUR — Euro</option>
+              <option value="GBP">GBP — British Pound</option>
+              <option value="CAD">CAD — Canadian Dollar</option>
+              <option value="AUD">AUD — Australian Dollar</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="issueDate">Issue date</label>
+            <input id="issueDate" type="date">
+          </div>
+          <div class="field">
+            <label for="dueDate">Due date</label>
+            <input id="dueDate" type="date">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="section-label"><span>03</span> Bill to</div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="clientName">Client name</label>
+            <input id="clientName" type="text" value="Acme Technologies Pvt. Ltd." placeholder="Client or company name">
+          </div>
+          <div class="field">
+            <label for="clientEmail">Client email</label>
+            <input id="clientEmail" type="email" value="accounts@acmetech.in" placeholder="client@company.com">
+          </div>
+        </div>
+        <div class="field">
+          <label for="clientAddress">Client address</label>
+          <textarea id="clientAddress" rows="2" placeholder="Client billing address">89 Cyber Park, Gurugram, Haryana 122002</textarea>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="section-label item-label"><span>04</span> Items <small id="itemCount">2 items</small></div>
+        <div class="item-head" aria-hidden="true"><span>Description</span><span>Qty</span><span>Rate</span><span>Amount</span><span></span></div>
+        <div id="itemsContainer"></div>
+        <button class="add-item" id="addItemBtn" type="button"><span>＋</span> Add line item</button>
+      </div>
+
+      <div class="form-card">
+        <div class="section-label"><span>05</span> Notes & payment</div>
+        <div class="field">
+          <label for="notes">Notes</label>
+          <textarea id="notes" rows="3" placeholder="Add a thank-you note or extra details">Thank you for your business! Payment is due within 14 days.</textarea>
+        </div>
+        <div class="field">
+          <label for="paymentDetails">Payment details</label>
+          <textarea id="paymentDetails" rows="3" placeholder="Bank account, UPI ID, or payment instructions">Bank: HDFC Bank · A/C: 000123456789 · IFSC: HDFC0001234</textarea>
+        </div>
+      </div>
+    </section>
+
+    <aside class="preview-panel" aria-labelledby="previewTitle">
+      <div class="preview-toolbar">
+        <div>
+          <p class="eyebrow">Live preview</p>
+          <h2 id="previewTitle">Your invoice</h2>
+        </div>
+        <span class="page-label">A4</span>
+      </div>
+
+      <article class="invoice-sheet" id="invoiceSheet">
+        <div class="invoice-accent"></div>
+        <header class="invoice-header">
+          <div class="invoice-business">
+            <div class="invoice-logo" id="pLogo"><span>NS</span><img alt=""></div>
+            <div>
+              <h3 id="pBusinessName">Northstar Studio</h3>
+              <p id="pBusinessEmail">hello@northstar.studio</p>
+              <p id="pBusinessPhone">+91 98765 43210</p>
+            </div>
+          </div>
+          <div class="invoice-title">
+            <h2>INVOICE</h2>
+            <p id="pInvoiceNumber">#INV-2026-001</p>
+          </div>
+        </header>
+
+        <div class="invoice-address-row">
+          <div>
+            <span class="mini-label">FROM</span>
+            <p id="pBusinessAddress">42 Residency Road, Bengaluru,<br>Karnataka 560025</p>
+          </div>
+          <div>
+            <span class="mini-label">BILL TO</span>
+            <strong id="pClientName">Acme Technologies Pvt. Ltd.</strong>
+            <p id="pClientEmail">accounts@acmetech.in</p>
+            <p id="pClientAddress">89 Cyber Park, Gurugram,<br>Haryana 122002</p>
+          </div>
+          <div class="date-block">
+            <div><span>Issue date</span><strong id="pIssueDate">—</strong></div>
+            <div><span>Due date</span><strong id="pDueDate">—</strong></div>
+          </div>
+        </div>
+
+        <table class="invoice-table">
+          <thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+          <tbody id="previewItems"></tbody>
+        </table>
+
+        <div class="invoice-summary">
+          <div class="notes-preview">
+            <div id="pNotesWrap"><span class="mini-label">NOTES</span><p id="pNotes"></p></div>
+          </div>
+          <div class="totals">
+            <div><span>Subtotal</span><strong id="pSubtotal">₹0.00</strong></div>
+            <div class="adjustment-row">
+              <label for="discount">Discount</label>
+              <span class="inline-control"><input id="discount" type="number" min="0" max="100" value="0" aria-label="Discount percentage">%</span>
+              <strong id="pDiscount">−₹0.00</strong>
+            </div>
+            <div class="adjustment-row">
+              <label for="tax">Tax</label>
+              <span class="inline-control"><input id="tax" type="number" min="0" max="100" value="18" aria-label="Tax percentage">%</span>
+              <strong id="pTax">₹0.00</strong>
+            </div>
+            <div class="grand-total"><span>Total due</span><strong id="pTotal">₹0.00</strong></div>
+          </div>
+        </div>
+
+        <footer class="invoice-footer">
+          <div>
+            <span class="mini-label">PAYMENT DETAILS</span>
+            <p id="pPaymentDetails"></p>
+          </div>
+          <div class="thank-you">Thank you.</div>
+        </footer>
+      </article>
+      <p class="privacy-note"><span>●</span> Your invoice stays private and is saved only on this device.</p>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>
