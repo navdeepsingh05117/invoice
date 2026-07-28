@@ -14,8 +14,8 @@
   <aside class="sidebar">
     <a class="side-brand" href="#" aria-label="Slate Invoice home">Slate<span>.</span></a>
     <div class="side-profile">
-      <span class="profile-avatar">YB</span>
-      <div><strong>Your business</strong><small>Business email</small></div>
+      <span class="profile-avatar" id="profileAvatar">YB</span>
+      <div><strong id="profileBusinessName">Your business</strong><small id="profileBusinessEmail">Business email</small></div>
     </div>
     <nav class="side-nav" aria-label="Main navigation">
       <button class="active" type="button" data-view="overview"><span>⌂</span>Overview</button>
@@ -132,6 +132,8 @@
           <div class="grid-2">
             <div class="field"><label for="catalogProductPrice">Unit price</label><input id="catalogProductPrice" type="number" min="0" step="0.01" placeholder="0.00"></div>
             <div class="field"><label for="catalogProductUnit">Unit</label><select id="catalogProductUnit"><option>Item</option><option>Hour</option><option>Day</option><option>Project</option></select></div>
+            <div class="field"><label for="catalogProductDiscount">Discount (%)</label><input id="catalogProductDiscount" type="number" min="0" max="100" step="0.01" placeholder="0"></div>
+            <div class="field"><label for="catalogProductTax">Tax (%)</label><input id="catalogProductTax" type="number" min="0" max="100" step="0.01" placeholder="0"></div>
           </div>
           <button class="save-setup-btn" id="addProductBtn" type="button">Add to catalogue</button>
         </div>
@@ -238,7 +240,7 @@
         <div class="product-picker">
           <select id="productPicker" aria-label="Select a saved product"><option value="">Select a product to add it to the invoice</option></select>
         </div>
-        <div class="item-head" aria-hidden="true"><span>Description</span><span>Qty</span><span>Rate</span><span>Amount</span><span></span></div>
+        <div class="item-head" aria-hidden="true"><span>Description</span><span>Qty</span><span>Rate</span><span>Disc.</span><span>Tax</span><span>Amount</span><span></span></div>
         <div id="itemsContainer"></div>
         <button class="add-item" id="addItemBtn" type="button"><span>＋</span> Add line item</button>
       </div>
@@ -316,13 +318,13 @@
           <div class="totals">
             <div><span>Subtotal</span><strong id="pSubtotal">₹0.00</strong></div>
             <div class="adjustment-row">
-              <label for="discount">Discount</label>
-              <span class="inline-control"><input id="discount" type="number" min="0" max="100" value="0" aria-label="Discount percentage">%</span>
+              <span>Item discounts</span>
+              <span></span>
               <strong id="pDiscount">−₹0.00</strong>
             </div>
             <div class="adjustment-row">
-              <label for="tax">Tax</label>
-              <span class="inline-control"><input id="tax" type="number" min="0" max="100" value="18" aria-label="Tax percentage">%</span>
+              <span>Item taxes</span>
+              <span></span>
               <strong id="pTax">₹0.00</strong>
             </div>
             <div class="grand-total"><span>Total due</span><strong id="pTotal">₹0.00</strong></div>

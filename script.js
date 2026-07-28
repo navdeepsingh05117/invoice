@@ -2,12 +2,12 @@ const currencySymbols = { INR: "₹", USD: "$", EUR: "€", GBP: "£", CAD: "C$"
 const fieldIds = [
   "businessName", "businessEmail", "businessPhone", "businessAddress",
   "invoiceNumber", "currency", "issueDate", "dueDate", "clientName",
-  "clientEmail", "clientAddress", "notes", "paymentDetails", "discount", "tax"
+  "clientEmail", "clientAddress", "notes", "paymentDetails"
 ];
 
 let state = {
   items: [
-    { name: "", detail: "", qty: 1, rate: 0 }
+    { name: "", detail: "", qty: 1, rate: 0, discount: 0, tax: 0 }
   ],
   products: [],
   logo: ""
@@ -21,6 +21,13 @@ const money = (value) => {
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]));
 const formatDate = (value) => value ? new Date(`${value}T00:00:00`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 const value = (id) => $(id).value.trim();
+const percent = value => Math.min(100, Math.max(0, Number(value) || 0));
+const itemAmounts = item => {
+  const base = Math.max(0, Number(item.qty) || 0) * Math.max(0, Number(item.rate) || 0);
+  const discount = base * percent(item.discount) / 100;
+  const tax = (base - discount) * percent(item.tax) / 100;
+  return { base, discount, tax, total: base - discount + tax };
+};
 
 function setInitialDates() {
   if (!$("issueDate").value) {
@@ -36,14 +43,18 @@ function renderItems() {
   state.items = state.items.map(item => ({
     ...item,
     qty: Math.max(0, Number(item.qty) || 0),
-    rate: Math.max(0, Number(item.rate) || 0)
+    rate: Math.max(0, Number(item.rate) || 0),
+    discount: percent(item.discount),
+    tax: percent(item.tax)
   }));
   $("itemsContainer").innerHTML = state.items.map((item, index) => `
     <div class="line-item" data-index="${index}">
       <input class="item-description" data-field="name" value="${escapeHtml(item.name)}" placeholder="Item description" aria-label="Item ${index + 1} description">
       <input type="number" data-field="qty" min="0" step="1" value="${item.qty}" aria-label="Item ${index + 1} quantity">
       <input type="number" data-field="rate" min="0" step="0.01" value="${item.rate}" aria-label="Item ${index + 1} rate">
-      <span class="line-amount">${money(item.qty * item.rate)}</span>
+      <input type="number" data-field="discount" min="0" max="100" step="0.01" value="${item.discount}" aria-label="Item ${index + 1} discount percentage">
+      <input type="number" data-field="tax" min="0" max="100" step="0.01" value="${item.tax}" aria-label="Item ${index + 1} tax percentage">
+      <span class="line-amount">${money(itemAmounts(item).total)}</span>
       <button class="remove-item" data-remove="${index}" type="button" aria-label="Remove item ${index + 1}">×</button>
     </div>
     <input class="item-detail-hidden" data-index="${index}" value="${escapeHtml(item.detail || "")}" hidden>
@@ -75,23 +86,22 @@ function renderPreview() {
       <td><strong>${escapeHtml(item.name || "Untitled item")}</strong>${item.detail ? `<small>${escapeHtml(item.detail)}</small>` : ""}</td>
       <td>${Number(item.qty || 0)}</td>
       <td>${money(item.rate)}</td>
-      <td><strong>${money(item.qty * item.rate)}</strong></td>
+      <td><strong>${money(itemAmounts(item).total)}</strong></td>
     </tr>
   `).join("");
 
-  const subtotal = state.items.reduce((sum, item) => sum + Number(item.qty || 0) * Number(item.rate || 0), 0);
-  const discount = subtotal * Math.min(Math.max(Number($("discount").value) || 0, 0), 100) / 100;
-  const taxable = subtotal - discount;
-  const tax = taxable * Math.min(Math.max(Number($("tax").value) || 0, 0), 100) / 100;
+  const subtotal = state.items.reduce((sum, item) => sum + itemAmounts(item).base, 0);
+  const discount = state.items.reduce((sum, item) => sum + itemAmounts(item).discount, 0);
+  const tax = state.items.reduce((sum, item) => sum + itemAmounts(item).tax, 0);
   $("pSubtotal").textContent = money(subtotal);
   $("pDiscount").textContent = `−${money(discount)}`;
   $("pTax").textContent = money(tax);
-  $("pTotal").textContent = money(taxable + tax);
+  $("pTotal").textContent = money(subtotal - discount + tax);
   $("summaryInvoice").textContent = value("invoiceNumber") || "Untitled";
   $("summaryItems").textContent = state.items.length;
-  $("summaryTotal").textContent = money(taxable + tax);
-  $("overviewTotal").textContent = money(taxable + tax);
-  $("overviewInvoiceAmount").textContent = money(taxable + tax);
+  $("summaryTotal").textContent = money(subtotal - discount + tax);
+  $("overviewTotal").textContent = money(subtotal - discount + tax);
+  $("overviewInvoiceAmount").textContent = money(subtotal - discount + tax);
   $("overviewInvoiceNumber").textContent = value("invoiceNumber") || "Untitled";
   $("overviewClient").textContent = value("clientName") || "No client added";
   $("overviewClientEmail").textContent = value("clientEmail") || "No email added";
@@ -159,6 +169,20 @@ function showToast(message) {
   setTimeout(() => $("toast").classList.remove("show"), 2200);
 }
 
+function updateCompanyProfile() {
+  const name = $("companyName").value.trim() || value("businessName") || "Your business";
+  const email = $("companyEmail").value.trim() || value("businessEmail") || "Business email";
+  const initials = name === "Your business"
+    ? "YB"
+    : name.split(/\s+/).slice(0, 2).map(word => word[0]).join("").toUpperCase();
+  $("profileBusinessName").textContent = name;
+  $("profileBusinessEmail").textContent = email;
+  $("profileAvatar").textContent = initials;
+  $("overviewTitle").textContent = name === "Your business"
+    ? "Hello there"
+    : `Hello, ${name.split(/\s+/)[0]}`;
+}
+
 fieldIds.forEach(id => $(id).addEventListener("input", renderPreview));
 
 $("itemsContainer").addEventListener("input", (event) => {
@@ -170,12 +194,13 @@ $("itemsContainer").addEventListener("input", (event) => {
     state.items[index][field] = event.target.value;
   } else {
     const enteredValue = Number(event.target.value);
-    const safeValue = Math.max(0, Number.isFinite(enteredValue) ? enteredValue : 0);
+    const upperLimit = field === "discount" || field === "tax" ? 100 : Infinity;
+    const safeValue = Math.min(upperLimit, Math.max(0, Number.isFinite(enteredValue) ? enteredValue : 0));
     state.items[index][field] = safeValue;
-    if (enteredValue < 0) event.target.value = 0;
+    if (enteredValue < 0 || enteredValue > upperLimit) event.target.value = safeValue;
   }
   row.querySelector(".line-amount").textContent =
-    money(state.items[index].qty * state.items[index].rate);
+    money(itemAmounts(state.items[index]).total);
   renderPreview();
 });
 
@@ -188,7 +213,7 @@ $("itemsContainer").addEventListener("click", (event) => {
 });
 
 $("addItemBtn").addEventListener("click", () => {
-  state.items.push({ name: "", detail: "", qty: 1, rate: 0 });
+  state.items.push({ name: "", detail: "", qty: 1, rate: 0, discount: 0, tax: 0 });
   renderItems();
   document.querySelector(".line-item:last-of-type .item-description")?.focus();
 });
@@ -276,6 +301,8 @@ $("viewInvoiceBtn").addEventListener("click", showInvoiceEditor);
 $("recentInvoiceRow").addEventListener("click", showInvoiceEditor);
 
 $("companyLogoBtn").addEventListener("click", () => $("logoInput").click());
+$("companyName").addEventListener("input", updateCompanyProfile);
+$("companyEmail").addEventListener("input", updateCompanyProfile);
 $("saveCompanyBtn").addEventListener("click", () => {
   const companyName = $("companyName").value.trim();
   if (!companyName) {
@@ -288,6 +315,7 @@ $("saveCompanyBtn").addEventListener("click", () => {
   $("businessPhone").value = $("companyPhone").value.trim();
   $("businessAddress").value = $("companyAddress").value.trim();
   renderPreview();
+  updateCompanyProfile();
   showToast("Company details saved and added to invoices.");
 });
 
@@ -298,7 +326,7 @@ function renderCatalogue() {
   $("catalogueList").innerHTML = state.products.length
     ? state.products.map((product, index) => `
       <div class="catalogue-item">
-        <div><strong>${escapeHtml(product.name)}</strong><small>Per ${escapeHtml(product.unit.toLowerCase())}</small></div>
+        <div><strong>${escapeHtml(product.name)}</strong><small>Per ${escapeHtml(product.unit.toLowerCase())} · ${percent(product.discount)}% off · ${percent(product.tax)}% tax</small></div>
         <span>${money(product.price)}</span>
         <button type="button" data-delete-product="${index}" aria-label="Delete ${escapeHtml(product.name)}">×</button>
       </div>`).join("")
@@ -313,14 +341,18 @@ function renderCatalogue() {
 $("addProductBtn").addEventListener("click", () => {
   const name = $("catalogProductName").value.trim();
   const price = Math.max(0, Number($("catalogProductPrice").value) || 0);
+  const discount = percent($("catalogProductDiscount").value);
+  const tax = percent($("catalogProductTax").value);
   if (!name) {
     showToast("Please enter a product name.");
     $("catalogProductName").focus();
     return;
   }
-  state.products.push({ name, price, unit: $("catalogProductUnit").value });
+  state.products.push({ name, price, discount, tax, unit: $("catalogProductUnit").value });
   $("catalogProductName").value = "";
   $("catalogProductPrice").value = "";
+  $("catalogProductDiscount").value = "";
+  $("catalogProductTax").value = "";
   renderCatalogue();
   showToast("Product added to your catalogue.");
 });
@@ -336,7 +368,14 @@ $("productPicker").addEventListener("change", () => {
   const index = $("productPicker").value;
   if (index === "") return;
   const product = state.products[Number(index)];
-  const item = { name: product.name, detail: `Per ${product.unit.toLowerCase()}`, qty: 1, rate: product.price };
+  const item = {
+    name: product.name,
+    detail: `Per ${product.unit.toLowerCase()}`,
+    qty: 1,
+    rate: product.price,
+    discount: percent(product.discount),
+    tax: percent(product.tax)
+  };
   if (state.items.length === 1 && !state.items[0].name && state.items[0].rate === 0) state.items[0] = item;
   else state.items.push(item);
   renderItems();
@@ -352,5 +391,6 @@ $("newInvoiceBtn").addEventListener("click", () => {
 
 loadState();
 setInitialDates();
+updateCompanyProfile();
 renderItems();
 renderCatalogue();
